@@ -1,9 +1,9 @@
 // src/App.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import initSqlJs from 'sql.js';
 import './App.css';
 
-// Helper delay
+// Helper to delay execution
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
 export default function App() {
@@ -16,14 +16,29 @@ export default function App() {
   const [execProcess, setExecProcess] = useState(null);
   const [doneList, setDoneList] = useState([]);
 
-  // Cargar sql.js + WASM
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
+  const queueRef = useRef([]);
+  const pausedRef = useRef(false);
+
+  // Load sql.js + WASM
   useEffect(() => {
     initSqlJs({ locateFile: file => `/sql-wasm.wasm` })
       .then(SQLLib => setSQL(SQLLib))
       .catch(console.error);
   }, []);
 
-  // Leer base de datos
+  // Reset simulation state
+  const resetSimulation = () => {
+    setExecProcess(null);
+    setDoneList([]);
+    setIsSimulating(false);
+    setIsPaused(false);
+    pausedRef.current = false;
+  };
+
+  // Handle DB file load
   const onFileChange = async e => {
     if (!SQL) return;
     const buf = await e.target.files[0].arrayBuffer();
@@ -31,11 +46,10 @@ export default function App() {
     setDb(database);
     setCatalogos([]);
     setReadyQueue([]);
-    setExecProcess(null);
-    setDoneList([]);
+    resetSimulation();
   };
 
-  // Listar catálogos
+  // List catalogs when DB or type changes
   useEffect(() => {
     if (!db) return;
     const stmt = db.prepare(
@@ -49,11 +63,10 @@ export default function App() {
     stmt.free();
     setCatalogos(rows);
     setReadyQueue([]);
-    setExecProcess(null);
-    setDoneList([]);
+    resetSimulation();
   }, [db, tipo]);
 
-  // Cargar procesos en readyQueue
+  // Load processes into queue
   const loadProcesos = catalog_id => {
     if (!db) return;
     const stmt = db.prepare(
@@ -76,34 +89,67 @@ export default function App() {
     }));
 
     setReadyQueue(procs);
-    setExecProcess(null);
-    setDoneList([]);
+    queueRef.current = procs;
+    resetSimulation();
   };
 
-  // Simulación RR
+  // Round Robin simulation with pause/resume
   const simular = async () => {
-    let queue = [...readyQueue];
+    setIsSimulating(true);
+    pausedRef.current = false;
+    setIsPaused(false);
+
+    let queue = [...queueRef.current];
     setDoneList([]);
-    setExecProcess(null);
 
     while (queue.length > 0) {
+      // Pause handling
+      while (pausedRef.current) {
+        await delay(100);
+      }
       const proc = queue.shift();
-      setReadyQueue(queue.slice());
+      queueRef.current = queue;
       setExecProcess(proc);
+      setReadyQueue(queue);
 
       const runTime = proc.prioridad === 1
         ? proc.remaining
         : Math.min(proc.remaining, quantum);
 
-      await delay(runTime);
-
+      // Ejecutar en ticks pequeños para respetar pausa inmediata
+      let elapsed = 0;
+      const tick = 1; // ms por paso
+      while (elapsed < runTime) {
+        if (pausedRef.current) {
+          await delay(100);
+          continue;
+        }
+        const step = Math.min(tick, runTime - elapsed);
+        await delay(step);
+        elapsed += step;
+      }
+      // Actualizar proceso según tiempo realmente corrido
       proc.executions += 1;
       proc.remaining -= runTime;
 
-      if (proc.prioridad === 0 && proc.remaining > 0) queue.push(proc);
-      else setDoneList(dl => [...dl, proc]);
-
+      if (proc.prioridad === 0 && proc.remaining > 0) {
+        queue.push(proc);
+      } else {
+        setDoneList(dl => [...dl, proc]);
+      }
       setExecProcess(null);
+    }
+    setIsSimulating(false);
+  };
+
+  // Toggle simulate/pause/continue
+  const toggleSimulation = () => {
+    if (!isSimulating) {
+      queueRef.current = readyQueue;
+      simular();
+    } else {
+      pausedRef.current = !pausedRef.current;
+      setIsPaused(pausedRef.current);
     }
   };
 
@@ -150,13 +196,13 @@ export default function App() {
         </div>
       )}
 
-      {readyQueue.length > 0 && !execProcess && (
-        <button className="sim-button" onClick={simular}>
-          Iniciar Simulación
+      {readyQueue.length > 0 && (
+        <button className="sim-button" onClick={toggleSimulation}>
+          {!isSimulating ? 'Iniciar' : isPaused ? 'Continuar' : 'Pausar'}
         </button>
       )}
 
-      {/* Modelo de Estados Dinámico */}
+      {/* State panels with scroll and sticky headers */}
       <div className="states-container">
         <div className="state-column scrollable">
           <h3>Listos</h3>
@@ -174,17 +220,17 @@ export default function App() {
 
         <div className="state-column scrollable">
           <h3>Ejecución</h3>
-          {execProcess ? (
+          {!execProcess ? (
+            <div className="empty">—</div>
+          ) : (
             <div className="process-card executing">
               <strong>{execProcess.nombre}</strong>
               <div>PID: {execProcess.pid}</div>
               <div>Llegada (TL): {execProcess.arrival}</div>
               <div>Ráfaga (R): {quantum} × {execProcess.nombre.length} = {execProcess.burst}</div>
               <div>Quantum: {quantum}</div>
-              <div>Ejecuciones: {execProcess.executions + 1}</div>
+              <div>Ejecuciones: {execProcess.executions}</div>
             </div>
-          ) : (
-            <div className="empty">—</div>
           )}
         </div>
 
