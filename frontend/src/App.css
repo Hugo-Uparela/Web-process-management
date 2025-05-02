@@ -1,5 +1,3 @@
-/* App.css - Modern Techno Styles with Sticky Headers and Pause Support */
-
 :root {
   --primary-color: #0ff;
   --secondary-color: #0f0;
@@ -252,4 +250,29 @@ body, .app-container {
 @keyframes pulse {
   0%, 100% { box-shadow: 0 0 8px var(--primary-color); }
   50% { box-shadow: 0 0 16px var(--primary-color); }
+}
+
+.app-footer {
+  position: static;
+  bottom: auto;
+  left: auto;
+  width: 100%;
+  background: var(--card-bg);
+  border-top: 1px solid var(--border-color);
+  padding: 1rem 0;
+  text-align: center;
+  margin-top: auto;
+}
+
+.footer-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  color: var(--text-color);
+  font-size: 0.9rem;
+  opacity: 0.75;
+}
+
+.footer-content span {
+  display: block;
 }
