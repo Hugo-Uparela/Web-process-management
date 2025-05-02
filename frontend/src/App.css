@@ -138,6 +138,28 @@ body, .app-container {
   overflow-y: auto;
 }
 
+.catalog-list-container.disabled {
+  filter: blur(4px);
+  pointer-events: none;
+  position: relative;
+}
+
+.catalog-list-container.disabled .overlay {
+  display: block;
+}
+
+.overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10;
+  display: none;
+}
+
+
 .process-card {
   background: rgba(255,255,255,0.1);
   border-left: 4px solid;

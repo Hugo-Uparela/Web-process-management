@@ -191,7 +191,8 @@ export default function App() {
       )}
 
       {catalogos.length > 0 && (
-        <div className="catalog-list-container">
+        <div className={`catalog-list-container${isSimulating ? ' disabled' : ''}`}>
+          {isSimulating && <div className="overlay" />}
           <h2>Catálogos</h2>
           <ul className="catalog-list">
             {catalogos.map(c => (
@@ -218,7 +219,7 @@ export default function App() {
               <div><strong>Nombre Proceso:</strong> {p.nombre}</div>
               <div><strong>PID:</strong> {p.pid}</div>
               <div><strong>Tiempo de Llegada:</strong> {p.arrival}</div>
-              <div><strong>Quantum:</strong> {quantum} </div>
+              <div><strong>Quantum:</strong> {quantum}</div>
               <div><strong>Ráfaga:</strong> {quantum} × {p.nombre.length} = {p.burst}</div>
               <div><strong>Prioridad:</strong> {p.prioridad === 0 ? 'Expulsivo' : 'No expulsivo'}</div>
               <div><strong>Turnaround:</strong> {p.executions}</div>
@@ -233,10 +234,11 @@ export default function App() {
           ) : (
             <div className={`process-card executing${isPaused ? ' paused' : ''}`}> 
               <div><strong>Nombre Proceso:</strong> {execProcess.nombre}</div>
-              <div><strong>PID: </strong> {execProcess.pid}</div>
+              <div><strong>PID:</strong> {execProcess.pid}</div>
               <div><strong>Tiempo de Llegada:</strong> {execProcess.arrival}</div>
-              <div><strong>Ráfaga:</strong> = {execProcess.burst}</div>
+              <div><strong>Ráfaga:</strong> {execProcess.burst}</div>
               <div><strong>Turnaround:</strong> {execProcess.executions + 1}</div>
+              <div><strong>Tiempo Finalización:</strong> {execProcess.finish ?? '─'}</div>
             </div>
           )}
         </div>
@@ -248,7 +250,7 @@ export default function App() {
               <div><strong>Nombre Proceso:</strong> {p.nombre}</div>
               <div><strong>PID:</strong> {p.pid}</div>
               <div><strong>Tiempo de Llegada:</strong> {p.arrival}</div>
-              <div><strong>Ráfaga:</strong> = {p.burst}</div>
+              <div><strong>Ráfaga:</strong> {p.burst}</div>
               <div><strong>Prioridad:</strong> {p.prioridad === 0 ? 'Expulsivo' : 'No expulsivo'}</div>
               <div><strong>Turnaround:</strong> {p.executions}</div>
               <div><strong>Tiempo Finalización:</strong> {p.finish}</div>
