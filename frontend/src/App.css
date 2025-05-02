@@ -44,7 +44,7 @@ body, .app-container {
   font-weight: 600;
 }
 .file-input input[type="file"] {
-  background: rgba(255,255,255,0.05);
+  background: var(--card-bg);
   padding: 0.5rem 1rem;
   border-radius: 6px;
   cursor: pointer;
@@ -63,7 +63,7 @@ body, .app-container {
   gap: 2rem;
   margin-bottom: 2rem;
 }
-.controls div {
+.controls > div {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -76,7 +76,7 @@ body, .app-container {
 }
 .controls select,
 .controls input[type="number"] {
-  background: var(--card-bg);
+  background: var(--background);
   border: 1px solid var(--border-color);
   padding: 0.5rem;
   border-radius: 4px;
@@ -84,11 +84,16 @@ body, .app-container {
   width: 140px;
   transition: border-color 0.3s;
 }
+.controls select option {
+  background: var(--background);
+  color: var(--text-color);
+}
 .controls select:hover,
 .controls input[type="number"]:hover {
   border-color: var(--primary-color);
 }
 
+/* Catalog list overlay/disabled */
 .catalog-list-container {
   max-height: calc(5 * 3rem);
   overflow-y: auto;
@@ -117,10 +122,36 @@ body, .app-container {
   display: none;
 }
 
+.catalog-list-container h2 {
+  text-align: center;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
 .catalog-list {
   list-style: none;
   padding: 0.5rem;
   margin: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+  font-size: 1.1rem;
+}
+.catalog-list li {
+  padding: 0.75rem;
+  border-radius: 4px;
+  background: transparent;
+  transition: background 0.3s;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.catalog-list li:hover {
+  background: rgba(0,255,255,0.2);
+}
+.catalog-list code {
+  color: var(--accent-color);
 }
 .catalog-list li {
   padding: 0.75rem;
@@ -137,6 +168,7 @@ body, .app-container {
   color: var(--accent-color);
 }
 
+/* Simulation button */
 .sim-button {
   display: block;
   margin: 1rem auto;
@@ -156,6 +188,7 @@ body, .app-container {
   box-shadow: 0 0 20px var(--accent-color);
 }
 
+/* States container */
 .states-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -183,12 +216,12 @@ body, .app-container {
   background: var(--card-bg);
   z-index: 1;
 }
-
 .state-column.scrollable {
   max-height: calc(5 * 6.5rem + 2rem);
   overflow-y: auto;
 }
 
+/* Process cards */
 .process-card {
   background: rgba(255,255,255,0.1);
   border-left: 4px solid;

@@ -240,7 +240,6 @@ export default function App() {
               <div><strong>Tiempo de Llegada:</strong> {execProcess.arrival}</div>
               <div><strong>Ráfaga:</strong> {execProcess.burst}</div>
               <div><strong>Turnaround:</strong> {execProcess.executions + 1}</div>
-              <div><strong>Tiempo Finalización:</strong> {execProcess.finish ?? '─'}</div>
             </div>
           )}
         </div>
