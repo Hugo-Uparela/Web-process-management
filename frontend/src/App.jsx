@@ -164,10 +164,12 @@ export default function App() {
     <div className="app-container">
       <h1 className="app-title">Simulador Round Robin</h1>
 
-      <div className="file-input">
-        <label>Carga tu <code>procesos.db</code>:</label>
-        <input type="file" accept=".db" onChange={onFileChange} />
-      </div>
+      {!db && (
+        <div className="file-input">
+          <label>Carga tu Archivo<code>.db</code>:</label>
+          <input type="file" accept=".db" onChange={onFileChange} />
+        </div>
+      )}
 
       {db && (
         <div className="controls">
@@ -232,7 +234,7 @@ export default function App() {
           {!execProcess ? (
             <div className="empty">—</div>
           ) : (
-            <div className={`process-card executing${isPaused ? ' paused' : ''}`}> 
+            <div className={`process-card executing${isPaused ? ' paused' : ''}`}>
               <div><strong>Nombre Proceso:</strong> {execProcess.nombre}</div>
               <div><strong>PID:</strong> {execProcess.pid}</div>
               <div><strong>Tiempo de Llegada:</strong> {execProcess.arrival}</div>
