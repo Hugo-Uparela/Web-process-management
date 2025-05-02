@@ -11,6 +11,22 @@ export default function App() {
   const [db, setDb] = useState(null);
   const [tipo, setTipo] = useState('cpu');
   const [quantum, setQuantum] = useState(200);
+
+  // Recalcular ráfaga y remaining cuando cambie el quantum
+  useEffect(() => {
+    setReadyQueue(q => q.map(p => ({
+      ...p,
+      burst: quantum * p.nombre.length,
+      remaining: quantum * p.nombre.length
+    })));
+    queueRef.current = queueRef.current.map(p => ({
+      ...p,
+      burst: quantum * p.nombre.length,
+      remaining: quantum * p.nombre.length
+    }));
+  }, [quantum]);
+
+  
   const [catalogos, setCatalogos] = useState([]);
   const [readyQueue, setReadyQueue] = useState([]);
   const [execProcess, setExecProcess] = useState(null);
