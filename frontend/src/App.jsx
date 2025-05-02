@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState, useEffect, useRef } from 'react';
 import initSqlJs from 'sql.js';
 import './App.css';
@@ -254,7 +253,7 @@ export default function App() {
               <div><strong>Ráfaga:</strong> {p.burst}</div>
               <div><strong>Prioridad:</strong> {p.prioridad === 0 ? 'Expulsivo' : 'No expulsivo'}</div>
               <div><strong>Turnaround:</strong> {p.executions}</div>
-              <div><strong>Tiempo Finalización:</strong> {p.finish}</div>
+              <div><strong>Tiempo Finalización:</strong> {quantum * p.executions}</div>
             </div>
           ))}
         </div>
