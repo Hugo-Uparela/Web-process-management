@@ -11,22 +11,6 @@ export default function App() {
   const [db, setDb] = useState(null);
   const [tipo, setTipo] = useState('cpu');
   const [quantum, setQuantum] = useState(200);
-
-  // Recalcular ráfaga y remaining cuando cambie el quantum
-  useEffect(() => {
-    setReadyQueue(q => q.map(p => ({
-      ...p,
-      burst: quantum * p.nombre.length,
-      remaining: quantum * p.nombre.length
-    })));
-    queueRef.current = queueRef.current.map(p => ({
-      ...p,
-      burst: quantum * p.nombre.length,
-      remaining: quantum * p.nombre.length
-    }));
-  }, [quantum]);
-
-
   const [catalogos, setCatalogos] = useState([]);
   const [readyQueue, setReadyQueue] = useState([]);
   const [execProcess, setExecProcess] = useState(null);
@@ -37,6 +21,7 @@ export default function App() {
 
   const queueRef = useRef([]);
   const pausedRef = useRef(false);
+  const simulationTimeRef = useRef(0);
 
   // Load sql.js + WASM
   useEffect(() => {
@@ -52,9 +37,10 @@ export default function App() {
     setIsSimulating(false);
     setIsPaused(false);
     pausedRef.current = false;
+    simulationTimeRef.current = 0;
   };
 
-  // Handle DB file load
+  // Handle file upload
   const onFileChange = async e => {
     if (!SQL) return;
     const buf = await e.target.files[0].arrayBuffer();
@@ -82,7 +68,7 @@ export default function App() {
     resetSimulation();
   }, [db, tipo]);
 
-  // Load processes into queue
+  // Load processes into ready queue
   const loadProcesos = catalog_id => {
     if (!db) return;
     const stmt = db.prepare(
@@ -101,7 +87,8 @@ export default function App() {
       burst: quantum * nombre.length,
       remaining: quantum * nombre.length,
       executions: 0,
-      arrival: idx
+      arrival: idx,
+      finish: null
     }));
 
     setReadyQueue(procs);
@@ -109,19 +96,20 @@ export default function App() {
     resetSimulation();
   };
 
-  // Round Robin simulation with pause/resume
+  // Run Round Robin simulation
   const simular = async () => {
     setIsSimulating(true);
     pausedRef.current = false;
     setIsPaused(false);
+    simulationTimeRef.current = 0;
 
     let queue = [...queueRef.current];
     setDoneList([]);
 
     while (queue.length > 0) {
-      // Pause handling
+      // pause handling
       while (pausedRef.current) {
-        await delay(100);
+        await delay(50);
       }
       const proc = queue.shift();
       queueRef.current = queue;
@@ -132,25 +120,28 @@ export default function App() {
         ? proc.remaining
         : Math.min(proc.remaining, quantum);
 
-      // Ejecutar en ticks pequeños para respetar pausa inmediata
+      // simulate in small ticks for immediate pause
       let elapsed = 0;
-      const tick = 1; // ms por paso
+      const tick = 20;
       while (elapsed < runTime) {
         if (pausedRef.current) {
-          await delay(100);
+          await delay(50);
           continue;
         }
         const step = Math.min(tick, runTime - elapsed);
         await delay(step);
         elapsed += step;
       }
-      // Actualizar proceso según tiempo realmente corrido
+
+      // advance global clock
+      simulationTimeRef.current += runTime;
       proc.executions += 1;
       proc.remaining -= runTime;
 
       if (proc.prioridad === 0 && proc.remaining > 0) {
         queue.push(proc);
       } else {
+        proc.finish = simulationTimeRef.current;
         setDoneList(dl => [...dl, proc]);
       }
       setExecProcess(null);
@@ -158,7 +149,7 @@ export default function App() {
     setIsSimulating(false);
   };
 
-  // Toggle simulate/pause/continue
+  // Toggle start/pause/continue
   const toggleSimulation = () => {
     if (!isSimulating) {
       queueRef.current = readyQueue;
@@ -218,18 +209,18 @@ export default function App() {
         </button>
       )}
 
-      {/* State panels with scroll and sticky headers */}
+      {/* State panels with full fields */}
       <div className="states-container">
         <div className="state-column scrollable">
           <h3>Listos</h3>
           {readyQueue.map(p => (
             <div key={p.pid} className="process-card ready">
-              <strong>{p.nombre}</strong>
-              <div>PID: {p.pid}</div>
-              <div>Llegada (TL): {p.arrival}</div>
-              <div>Ráfaga (R): {quantum} × {p.nombre.length} = {p.burst}</div>
-              <div>Quantum: {quantum}</div>
-              <div>Ejecuciones: {p.executions}</div>
+              <div><strong>Nombre Proceso:</strong> {p.nombre}</div>
+              <div><strong>Tiempo de Llegada:</strong> {p.arrival}</div>
+              <div><strong>Ráfaga:</strong> {quantum} × {p.nombre.length} = {p.burst}</div>
+              <div><strong>Prioridad:</strong> {p.prioridad === 0 ? 'Expulsivo' : 'No expulsivo'}</div>
+              <div><strong>Turnaround:</strong> {p.executions}</div>
+              <div><strong>Tiempo Finalización:</strong> {p.finish ?? '─'}</div>
             </div>
           ))}
         </div>
@@ -239,34 +230,27 @@ export default function App() {
           {!execProcess ? (
             <div className="empty">—</div>
           ) : (
-            <div
-              className={
-                `process-card executing${isPaused ? ' paused' : ''}`
-              }
-            >
-              <strong>{execProcess.nombre}</strong>
-              <div>PID: {execProcess.pid}</div>
-              <div>Llegada (TL): {execProcess.arrival}</div>
-              <div>
-                Ráfaga (R): {quantum} × {execProcess.nombre.length} = {execProcess.burst}
-              </div>
-              <div>Quantum: {quantum}</div>
-              <div>Ejecuciones: {execProcess.executions}</div>
+            <div className={`process-card executing${isPaused ? ' paused' : ''}`}> 
+              <div><strong>Nombre Proceso:</strong> {execProcess.nombre}</div>
+              <div><strong>Tiempo de Llegada:</strong> {execProcess.arrival}</div>
+              <div><strong>Ráfaga:</strong> {quantum} × {execProcess.nombre.length} = {execProcess.burst}</div>
+              <div><strong>Prioridad:</strong> {execProcess.prioridad === 0 ? 'Expulsivo' : 'No expulsivo'}</div>
+              <div><strong>Turnaround:</strong> {execProcess.executions + 1}</div>
+              <div><strong>Tiempo Finalización:</strong> {execProcess.finish ?? '─'}</div>
             </div>
           )}
         </div>
-
 
         <div className="state-column scrollable">
           <h3>Terminados</h3>
           {doneList.map(p => (
             <div key={p.pid} className="process-card done">
-              <strong>{p.nombre}</strong>
-              <div>PID: {p.pid}</div>
-              <div>Llegada (TL): {p.arrival}</div>
-              <div>Ráfaga (R): {quantum} × {p.nombre.length} = {p.burst}</div>
-              <div>Quantum: {quantum}</div>
-              <div>Ejecuciones: {p.executions}</div>
+              <div><strong>Nombre Proceso:</strong> {p.nombre}</div>
+              <div><strong>Tiempo de Llegada:</strong> {p.arrival}</div>
+              <div><strong>Ráfaga:</strong> {quantum} × {p.nombre.length} = {p.burst}</div>
+              <div><strong>Prioridad:</strong> {p.prioridad === 0 ? 'Expulsivo' : 'No expulsivo'}</div>
+              <div><strong>Turnaround:</strong> {p.executions}</div>
+              <div><strong>Tiempo Finalización:</strong> {p.finish}</div>
             </div>
           ))}
         </div>
