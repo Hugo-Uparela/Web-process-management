@@ -79,196 +79,199 @@ export default function App() {
     stmt.free();
 
 
-  //  calculamos arrival según la guía:
-  // Si listo está vacío → T.L = 0; sino → T.L = T.L_último + 1
-  let lastArrival = -1;
-  const procs = rows.map(([pid, nombre, usuario, prioridad]) => {
-    const arrival = lastArrival + 1;
-    lastArrival = arrival;
-    const burst = quantum * nombre.length;
-   
-    return {
-      pid,
-      nombre,
-      usuario,
-      prioridad,
-      burst,
-      remaining: burst,
-      executions: 0,
-      arrival,
-      finish: null
-    };
-  });
+    //  calculamos arrival según la guía:
+    // Si listo está vacío → T.L = 0; sino → T.L = T.L_último + 1
+    let lastArrival = -1;
+    const procs = rows.map(([pid, nombre, usuario, prioridad]) => {
+      const arrival = lastArrival + 1;
+      lastArrival = arrival;
+      const burst = quantum * nombre.length;
 
-  setReadyQueue(procs);
-  queueRef.current = procs;
-  resetSimulation();
-};
+      return {
+        pid,
+        nombre,
+        usuario,
+        prioridad,
+        burst,
+        remaining: burst,
+        executions: 0,
+        arrival,
+        finish: null
+      };
+    });
+
+    setReadyQueue(procs);
+    queueRef.current = procs;
+    resetSimulation();
+  };
 
 
-// Run Round Robin simulation
-const simular = async () => {
-  setIsSimulating(true);
-  pausedRef.current = false;
-  setIsPaused(false);
-  simulationTimeRef.current = 0;
+  // Run Round Robin simulation
+  const simular = async () => {
+    setIsSimulating(true);
+    pausedRef.current = false;
+    setIsPaused(false);
+    simulationTimeRef.current = 0;
 
-  let queue = [...queueRef.current];
-  setDoneList([]);
+    let queue = [...queueRef.current];
+    setDoneList([]);
 
-  while (queue.length > 0) {
-    // pause handling
-    while (pausedRef.current) {
-      await delay(50);
-    }
-    const proc = queue.shift();
-    queueRef.current = queue;
-    setExecProcess(proc);
-    setReadyQueue(queue);
-
-    const runTime = proc.prioridad === 1
-      ? proc.remaining
-      : Math.min(proc.remaining, quantum);
-
-    // simulate in small ticks for immediate pause
-    let elapsed = 0;
-    const tick = 20;
-    while (elapsed < runTime) {
-      if (pausedRef.current) {
+    while (queue.length > 0) {
+      // pause handling
+      while (pausedRef.current) {
         await delay(50);
-        continue;
       }
-      const step = Math.min(tick, runTime - elapsed);
-      await delay(step);
-      elapsed += step;
+      const proc = queue.shift();
+      queueRef.current = queue;
+      setExecProcess(proc);
+      setReadyQueue(queue);
+
+      const runTime = proc.prioridad === 1
+        ? proc.remaining
+        : Math.min(proc.remaining, quantum);
+
+      // simulate in small ticks for immediate pause
+      let elapsed = 0;
+      const tick = 20;
+      while (elapsed < runTime) {
+        if (pausedRef.current) {
+          await delay(50);
+          continue;
+        }
+        const step = Math.min(tick, runTime - elapsed);
+        await delay(step);
+        elapsed += step;
+      }
+
+      // advance global clock
+      simulationTimeRef.current += runTime;
+      proc.executions += 1;
+      proc.remaining -= runTime;
+
+      if (proc.prioridad === 0 && proc.remaining > 0) {
+        queue.push(proc);
+      } else {
+        proc.finish = simulationTimeRef.current;
+        setDoneList(dl => [...dl, proc]);
+      }
+      setExecProcess(null);
     }
+    setIsSimulating(false);
+  };
 
-    // advance global clock
-    simulationTimeRef.current += runTime;
-    proc.executions += 1;
-    proc.remaining -= runTime;
-
-    if (proc.prioridad === 0 && proc.remaining > 0) {
-      queue.push(proc);
+  // Toggle start/pause/continue
+  const toggleSimulation = () => {
+    if (!isSimulating) {
+      queueRef.current = readyQueue;
+      simular();
     } else {
-      proc.finish = simulationTimeRef.current;
-      setDoneList(dl => [...dl, proc]);
+      pausedRef.current = !pausedRef.current;
+      setIsPaused(pausedRef.current);
     }
-    setExecProcess(null);
-  }
-  setIsSimulating(false);
-};
+  };
 
-// Toggle start/pause/continue
-const toggleSimulation = () => {
-  if (!isSimulating) {
-    queueRef.current = readyQueue;
-    simular();
-  } else {
-    pausedRef.current = !pausedRef.current;
-    setIsPaused(pausedRef.current);
-  }
-};
+  return (
+    <div className="app-container">
+      <h1 className="app-title">Simulador Round Robin</h1>
 
-return (
-  <div className="app-container">
-    <h1 className="app-title">Simulador Round Robin</h1>
-
-    {!db && (
-      <div className="file-input">
-        <label>Carga tu Archivo<code>.db</code>:</label>
-        <input type="file" accept=".db" onChange={onFileChange} />
-      </div>
-    )}
-
-    {db && (
-      <div className="controls">
-        <div>
-          <label>Tipo:</label>
-          <select value={tipo} onChange={e => setTipo(e.target.value)}>
-            <option value="cpu">CPU</option>
-            <option value="memoria">Memoria</option>
-          </select>
+      {!db && (
+        <div className="file-input">
+          <label>Carga tu Archivo<code>.db</code>:</label>
+          <input type="file" accept=".db" onChange={onFileChange} />
         </div>
-        <div>
-          <label>Quantum (ms):</label>
-          <input
-            type="number"
-            min="1"
-            value={quantum}
-            onChange={e => setQuantum(Number(e.target.value))}
-          />
-        </div>
-      </div>
-    )}
+      )}
 
-    {catalogos.length > 0 && (
-      <div className={`catalog-list-container${isSimulating ? ' disabled' : ''}`}>
-        {isSimulating && <div className="overlay" />}
-        <h2>Catálogos</h2>
-        <ul className="catalog-list">
-          {catalogos.map(c => (
-            <li key={c.id} onClick={() => loadProcesos(c.id)}>
-              {c.nombre} (<code>{c.id}</code>)
-            </li>
+      {db && (
+        <div className="controls">
+          <div>
+            <label>Tipo:</label>
+            <select value={tipo} onChange={e => setTipo(e.target.value)}>
+              <option value="cpu">CPU</option>
+              <option value="memoria">Memoria</option>
+            </select>
+          </div>
+          <div>
+            <label>Quantum (ms):</label>
+            <input
+              type="number"
+              min="1"
+              value={quantum}
+              onChange={e => setQuantum(Number(e.target.value))}
+            />
+          </div>
+        </div>
+      )}
+
+      {catalogos.length > 0 && (
+        <div className={`catalog-list-container${isSimulating ? ' disabled' : ''}`}>
+          {isSimulating && <div className="overlay" />}
+          <h2>Catálogos</h2>
+          <ul className="catalog-list">
+            {catalogos.map(c => (
+              <li key={c.id} onClick={() => loadProcesos(c.id)}>
+                {c.nombre} (<code>{c.id}</code>)
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {readyQueue.length > 0 && (
+        <button className="sim-button" onClick={toggleSimulation}>
+          {!isSimulating ? 'Iniciar' : isPaused ? 'Continuar' : 'Pausar'}
+        </button>
+      )}
+
+      {/* State panels with full fields */}
+      <div className="states-container">
+        <div className="state-column scrollable">
+          <h3>Listos</h3>
+          {readyQueue.map(p => (
+            <div key={p.pid} className="process-card ready">
+              <div><strong>Nombre Proceso:</strong> {p.nombre}</div>
+              <div><strong>PID:</strong> {p.pid}</div>
+              <div><strong>Tiempo de Llegada:</strong> {p.arrival}</div>
+              <div><strong>Quantum:</strong> {quantum}</div>
+              <div><strong>Ráfaga:</strong> {quantum} × {p.nombre.length} = {p.burst}</div>
+              <div><strong>Prioridad:</strong> {p.prioridad === 0 ? 'Expulsivo' : 'No expulsivo'}</div>
+              <div><strong>Turnaround:</strong> {p.executions}</div>
+            </div>
           ))}
-        </ul>
-      </div>
-    )}
+        </div>
 
-    {readyQueue.length > 0 && (
-      <button className="sim-button" onClick={toggleSimulation}>
-        {!isSimulating ? 'Iniciar' : isPaused ? 'Continuar' : 'Pausar'}
-      </button>
-    )}
+        <div className="state-column scrollable">
+          <h3>Ejecución</h3>
+          {!execProcess ? (
+            <div className="empty">—</div>
+          ) : (
+            <div className={`process-card executing${isPaused ? ' paused' : ''}`}>
+              <div><strong>Nombre Proceso:</strong> {execProcess.nombre}</div>
+              <div><strong>PID:</strong> {execProcess.pid}</div>
+              <div><strong>Tiempo de Llegada:</strong> {execProcess.arrival}</div>
+              <div><strong>Ráfaga:</strong> {execProcess.burst}</div>
+              <div><strong>Turnaround:</strong> {execProcess.executions + 1}</div>
+            </div>
+          )}
+        </div>
 
-    {/* State panels with full fields */}
-    <div className="states-container">
-      <div className="state-column scrollable">
-        <h3>Listos</h3>
-        {readyQueue.map(p => (
-          <div key={p.pid} className="process-card ready">
-            <div><strong>Nombre Proceso:</strong> {p.nombre}</div>
-            <div><strong>PID:</strong> {p.pid}</div>
-            <div><strong>Tiempo de Llegada:</strong> {p.arrival}</div>
-            <div><strong>Quantum:</strong> {quantum}</div>
-            <div><strong>Ráfaga:</strong> {quantum} × {p.nombre.length} = {p.burst}</div>
-            <div><strong>Prioridad:</strong> {p.prioridad === 0 ? 'Expulsivo' : 'No expulsivo'}</div>
-            <div><strong>Turnaround:</strong> {p.executions}</div>
-          </div>
-        ))}
-      </div>
+        <div className="state-column scrollable">
+          <h3>Terminados</h3>
+          {doneList.map(p => (
+            <div key={p.pid} className="process-card done">
+              <div><strong>Nombre Proceso:</strong> {p.nombre}</div>
+              <div><strong>PID:</strong> {p.pid}</div>
+              <div><strong>Tiempo de Llegada:</strong> {p.arrival}</div>
+              <div><strong>Ráfaga:</strong> {p.burst}</div>
+              <div><strong>Prioridad:</strong> {p.prioridad === 0 ? 'Expulsivo' : 'No expulsivo'}</div>
+              <div><strong>Turnaround:</strong> {p.executions}</div>
 
-      <div className="state-column scrollable">
-        <h3>Ejecución</h3>
-        {!execProcess ? (
-          <div className="empty">—</div>
-        ) : (
-          <div className={`process-card executing${isPaused ? ' paused' : ''}`}>
-            <div><strong>Nombre Proceso:</strong> {execProcess.nombre}</div>
-            <div><strong>PID:</strong> {execProcess.pid}</div>
-            <div><strong>Tiempo de Llegada:</strong> {execProcess.arrival}</div>
-            <div><strong>Ráfaga:</strong> {execProcess.burst}</div>
-            <div><strong>Turnaround:</strong> {execProcess.executions + 1}</div>
-          </div>
-        )}
-      </div>
-
-      <div className="state-column scrollable">
-        <h3>Terminados</h3>
-        {doneList.map(p => (
-          <div key={p.pid} className="process-card done">
-            <div><strong>Nombre Proceso:</strong> {p.nombre}</div>
-            <div><strong>PID:</strong> {p.pid}</div>
-            <div><strong>Tiempo de Llegada:</strong> {p.arrival}</div>
-            <div><strong>Ráfaga:</strong> {p.burst}</div>
-            <div><strong>Prioridad:</strong> {p.prioridad === 0 ? 'Expulsivo' : 'No expulsivo'}</div>
-            <div><strong>Turnaround:</strong> {p.executions}</div>
-            <div><strong>Tiempo Finalización:</strong> {quantum * p.executions}</div>
-          </div>
-        ))}
+              {/* Tiempo Finalización  Quantum * #Ejecuciones, donde #Ejecuciones  */}
+              {/* indica la cantidad de veces que un proceso utilizo la C.P.U  */}
+              <div><strong>Tiempo Finalización:</strong> {quantum * p.executions}</div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 }
