@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import initSqlJs from 'sql.js';
 import './App.css';
 
-// Helper to pause
+// Helper delay
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
 export default function App() {
@@ -64,7 +64,6 @@ export default function App() {
     while (stmt.step()) rows.push(stmt.get());
     stmt.free();
 
-    // Mapear a objetos con burst y contador
     const procs = rows.map(([pid, nombre, usuario, prioridad], idx) => ({
       pid,
       nombre,
@@ -81,7 +80,7 @@ export default function App() {
     setDoneList([]);
   };
 
-  // Simulación Round Robin dinámica
+  // Simulación RR
   const simular = async () => {
     let queue = [...readyQueue];
     setDoneList([]);
@@ -92,25 +91,17 @@ export default function App() {
       setReadyQueue(queue.slice());
       setExecProcess(proc);
 
-      // Determinar cuánto corre
       const runTime = proc.prioridad === 1
         ? proc.remaining
         : Math.min(proc.remaining, quantum);
 
-      // Espera sim
       await delay(runTime);
 
-      // Actualizar ejecuciones y remaining
       proc.executions += 1;
       proc.remaining -= runTime;
 
-      // Si expulsivo y no terminó, vuelve a ready
-      if (proc.prioridad === 0 && proc.remaining > 0) {
-        queue.push(proc);
-      } else {
-        // termina
-        setDoneList(dl => [...dl, proc]);
-      }
+      if (proc.prioridad === 0 && proc.remaining > 0) queue.push(proc);
+      else setDoneList(dl => [...dl, proc]);
 
       setExecProcess(null);
     }
@@ -121,7 +112,7 @@ export default function App() {
       <h1 className="app-title">Simulador Round Robin</h1>
 
       <div className="file-input">
-        <label>Carga tu Archivo <code>.db</code>:</label>
+        <label>Carga tu <code>procesos.db</code>:</label>
         <input type="file" accept=".db" onChange={onFileChange} />
       </div>
 
@@ -167,37 +158,45 @@ export default function App() {
 
       {/* Modelo de Estados Dinámico */}
       <div className="states-container">
-        <div className="state-column">
+        <div className="state-column scrollable">
           <h3>Listos</h3>
           {readyQueue.map(p => (
             <div key={p.pid} className="process-card ready">
               <strong>{p.nombre}</strong>
               <div>PID: {p.pid}</div>
-              <div>Quantum: {p.burst}</div>
+              <div>Llegada (TL): {p.arrival}</div>
+              <div>Ráfaga (R): {quantum} × {p.nombre.length} = {p.burst}</div>
+              <div>Quantum: {quantum}</div>
               <div>Ejecuciones: {p.executions}</div>
             </div>
           ))}
         </div>
-        <div className="state-column">
+
+        <div className="state-column scrollable">
           <h3>Ejecución</h3>
           {execProcess ? (
             <div className="process-card executing">
               <strong>{execProcess.nombre}</strong>
               <div>PID: {execProcess.pid}</div>
-              <div>Quantum: {execProcess.burst}</div>
+              <div>Llegada (TL): {execProcess.arrival}</div>
+              <div>Ráfaga (R): {quantum} × {execProcess.nombre.length} = {execProcess.burst}</div>
+              <div>Quantum: {quantum}</div>
               <div>Ejecuciones: {execProcess.executions + 1}</div>
             </div>
           ) : (
             <div className="empty">—</div>
           )}
         </div>
-        <div className="state-column">
+
+        <div className="state-column scrollable">
           <h3>Terminados</h3>
           {doneList.map(p => (
             <div key={p.pid} className="process-card done">
               <strong>{p.nombre}</strong>
               <div>PID: {p.pid}</div>
-              <div>Quantum: {p.burst}</div>
+              <div>Llegada (TL): {p.arrival}</div>
+              <div>Ráfaga (R): {quantum} × {p.nombre.length} = {p.burst}</div>
+              <div>Quantum: {quantum}</div>
               <div>Ejecuciones: {p.executions}</div>
             </div>
           ))}
