@@ -216,6 +216,7 @@ export default function App() {
           {readyQueue.map(p => (
             <div key={p.pid} className="process-card ready">
               <div><strong>Nombre Proceso:</strong> {p.nombre}</div>
+              <div><strong>PID:</strong> {p.pid}</div>
               <div><strong>Tiempo de Llegada:</strong> {p.arrival}</div>
               <div><strong>Quantum:</strong> {quantum} </div>
               <div><strong>Ráfaga:</strong> {quantum} × {p.nombre.length} = {p.burst}</div>
@@ -232,9 +233,9 @@ export default function App() {
           ) : (
             <div className={`process-card executing${isPaused ? ' paused' : ''}`}> 
               <div><strong>Nombre Proceso:</strong> {execProcess.nombre}</div>
+              <div><strong>PID: </strong> {execProcess.pid}</div>
               <div><strong>Tiempo de Llegada:</strong> {execProcess.arrival}</div>
               <div><strong>Ráfaga:</strong> = {execProcess.burst}</div>
-              <div><strong>Prioridad:</strong> {execProcess.prioridad === 0 ? 'Expulsivo' : 'No expulsivo'}</div>
               <div><strong>Turnaround:</strong> {execProcess.executions + 1}</div>
             </div>
           )}
@@ -245,6 +246,7 @@ export default function App() {
           {doneList.map(p => (
             <div key={p.pid} className="process-card done">
               <div><strong>Nombre Proceso:</strong> {p.nombre}</div>
+              <div><strong>PID:</strong> {p.pid}</div>
               <div><strong>Tiempo de Llegada:</strong> {p.arrival}</div>
               <div><strong>Ráfaga:</strong> = {p.burst}</div>
               <div><strong>Prioridad:</strong> {p.prioridad === 0 ? 'Expulsivo' : 'No expulsivo'}</div>
