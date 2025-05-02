@@ -26,7 +26,7 @@ export default function App() {
     }));
   }, [quantum]);
 
-  
+
   const [catalogos, setCatalogos] = useState([]);
   const [readyQueue, setReadyQueue] = useState([]);
   const [execProcess, setExecProcess] = useState(null);
@@ -239,16 +239,23 @@ export default function App() {
           {!execProcess ? (
             <div className="empty">—</div>
           ) : (
-            <div className="process-card executing">
+            <div
+              className={
+                `process-card executing${isPaused ? ' paused' : ''}`
+              }
+            >
               <strong>{execProcess.nombre}</strong>
               <div>PID: {execProcess.pid}</div>
               <div>Llegada (TL): {execProcess.arrival}</div>
-              <div>Ráfaga (R): {quantum} × {execProcess.nombre.length} = {execProcess.burst}</div>
+              <div>
+                Ráfaga (R): {quantum} × {execProcess.nombre.length} = {execProcess.burst}
+              </div>
               <div>Quantum: {quantum}</div>
               <div>Ejecuciones: {execProcess.executions}</div>
             </div>
           )}
         </div>
+
 
         <div className="state-column scrollable">
           <h3>Terminados</h3>
