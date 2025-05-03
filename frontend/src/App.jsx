@@ -1,19 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LabelList } from 'recharts';
 import initSqlJs from 'sql.js';
 import './App.css';
 
 // Helper to delay execution
 const delay = ms => new Promise(res => setTimeout(res, ms));
 
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    return (
+      <div className="custom-tooltip">
+        <div className="tooltip-label">{label}</div>
+        <div className="tooltip-value">Ejecuciones: {payload[0].value}</div>
+      </div>
+    );
+  }
+  return null;
+};
+
 export default function App() {
   const [SQL, setSQL] = useState(null);
   const [db, setDb] = useState(null);
   const [tipo, setTipo] = useState('cpu');
-  const [quantum, setQuantum] = useState(200);
+  const [quantum, setQuantum] = useState(20);
   const [catalogos, setCatalogos] = useState([]);
   const [readyQueue, setReadyQueue] = useState([]);
   const [execProcess, setExecProcess] = useState(null);
-  const [doneList, setDoneList] = useState([]);
+  const [doneList, setDoneList] = useState([]); const [totalCount, setTotalCount] = useState(0);
 
   const [isSimulating, setIsSimulating] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -102,6 +115,7 @@ export default function App() {
 
     setReadyQueue(procs);
     queueRef.current = procs;
+    setTotalCount(procs.length);
     resetSimulation();
   };
 
@@ -272,6 +286,84 @@ export default function App() {
           ))}
         </div>
       </div>
+
+      {!isSimulating && doneList.length === totalCount && (
+        <div className="chart-container">
+          <BarChart
+            width={1000}
+            height={500}
+            data={doneList.map(p => ({
+              name: p.nombre,
+              ejecuciones: p.executions
+            }))}
+            margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
+            barCategoryGap="25%"
+            barSize={40}
+          >
+            <defs>
+              <linearGradient id="gradExec" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="var(--primary-color)" stopOpacity={0.9} />
+                <stop offset="100%" stopColor="var(--accent-color)" stopOpacity={0.9} />
+              </linearGradient>
+            </defs>
+
+            <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" />
+
+            <XAxis
+              dataKey="name"
+              interval={0}
+              angle={-45}
+              textAnchor="end"
+              height={60}
+              tick={{ fill: 'var(--text-color)', fontSize: 12 }}
+              tickFormatter={str =>
+                str.length > 12 ? str.slice(0, 12) + '…' : str
+              }
+            />
+
+            <YAxis
+              domain={[0, 'dataMax']}
+              allowDecimals={false}
+              tick={{ fill: 'var(--text-color)', fontSize: 12 }}
+            />
+
+            <Tooltip
+              cursor={false}                           // <-- desactiva el rectángulo de hover
+              contentStyle={{
+                background: 'rgba(0,0,0,0.8)',
+                border: 'none',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.5)',
+                borderRadius: '6px',
+                padding: '0.5rem 1rem'
+              }}
+              itemStyle={{ color: 'var(--primary-color)', fontWeight: 'bold' }}
+              labelStyle={{ color: 'var(--accent-color)', fontSize: '0.9rem' }}
+            />
+
+
+            <Bar
+              dataKey="ejecuciones"
+              fill="url(#gradExec)"
+              background={null}           // quita completamente el rectángulo de fondo
+              activeShape={null}          // desactiva cualquier forma “activa” al pasar el ratón
+              radius={[6, 6, 0, 0]}
+              stroke="var(--text-color)"
+              strokeWidth={1}
+            >
+              <LabelList
+                dataKey="ejecuciones"
+                position="top"
+                style={{
+                  fill: 'var(--text-color)',
+                  fontWeight: 'bold',
+                  fontSize: 12
+                }}
+              />
+            </Bar>
+          </BarChart>
+        </div>
+      )}
+
 
       <footer className="app-footer">
         <div className="footer-content">

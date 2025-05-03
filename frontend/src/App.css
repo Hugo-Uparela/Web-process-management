@@ -2,13 +2,14 @@
   --primary-color: #0ff;
   --secondary-color: #0f0;
   --background: #111;
-  --card-bg: rgba(255,255,255,0.05);
-  --border-color: rgba(255,255,255,0.2);
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --border-color: rgba(255, 255, 255, 0.2);
   --text-color: #eee;
   --accent-color: #f0f;
 }
 
-body, .app-container {
+body,
+.app-container {
   background-color: var(--background);
   color: var(--text-color);
   font-family: 'Segoe UI', sans-serif;
@@ -16,7 +17,6 @@ body, .app-container {
   padding: 0;
 }
 
-/* Title styling */
 .app-title {
   text-align: center;
   font-size: 3rem;
@@ -28,7 +28,6 @@ body, .app-container {
   letter-spacing: 0.1rem;
 }
 
-/* File input styling */
 .file-input {
   display: flex;
   justify-content: center;
@@ -36,11 +35,13 @@ body, .app-container {
   gap: 0.75rem;
   margin-bottom: 1.5rem;
 }
+
 .file-input label {
   font-size: 1.1rem;
   color: var(--primary-color);
   font-weight: 600;
 }
+
 .file-input input[type="file"] {
   background: var(--card-bg);
   padding: 0.5rem 1rem;
@@ -49,29 +50,32 @@ body, .app-container {
   color: var(--text-color);
   transition: border-color 0.3s, background 0.3s;
 }
+
 .file-input input[type="file"]:hover {
   border-color: var(--accent-color);
-  background: rgba(240,0,255,0.1);
+  background: rgba(240, 0, 255, 0.1);
 }
 
-/* Controls styling */
 .controls {
   display: flex;
   justify-content: center;
   gap: 2rem;
   margin-bottom: 2rem;
 }
-.controls > div {
+
+.controls>div {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 0.25rem;
 }
+
 .controls label {
   font-weight: bold;
   color: var(--accent-color);
   font-size: 1rem;
 }
+
 .controls select,
 .controls input[type="number"] {
   background: var(--background);
@@ -82,16 +86,17 @@ body, .app-container {
   width: 140px;
   transition: border-color 0.3s;
 }
+
 .controls select option {
   background: var(--background);
   color: var(--text-color);
 }
+
 .controls select:hover,
 .controls input[type="number"]:hover {
   border-color: var(--primary-color);
 }
 
-/* Catalog list overlay/disabled */
 .catalog-list-container {
   max-height: calc(5 * 3rem);
   overflow-y: auto;
@@ -102,13 +107,16 @@ body, .app-container {
   background: var(--card-bg);
   position: relative;
 }
+
 .catalog-list-container.disabled {
   filter: blur(4px);
   pointer-events: none;
 }
+
 .catalog-list-container.disabled .overlay {
   display: block;
 }
+
 .overlay {
   position: absolute;
   top: 0;
@@ -135,6 +143,7 @@ body, .app-container {
   gap: 0.75rem;
   font-size: 1.1rem;
 }
+
 .catalog-list li {
   padding: 0.75rem;
   border-radius: 4px;
@@ -145,12 +154,15 @@ body, .app-container {
   justify-content: center;
   align-items: center;
 }
+
 .catalog-list li:hover {
-  background: rgba(0,255,255,0.2);
+  background: rgba(0, 255, 255, 0.2);
 }
+
 .catalog-list code {
   color: var(--accent-color);
 }
+
 .catalog-list li {
   padding: 0.75rem;
   margin: 0.25rem 0;
@@ -159,14 +171,15 @@ body, .app-container {
   transition: background 0.3s;
   cursor: pointer;
 }
+
 .catalog-list li:hover {
-  background: rgba(0,255,255,0.2);
+  background: rgba(0, 255, 255, 0.2);
 }
+
 .catalog-list code {
   color: var(--accent-color);
 }
 
-/* Simulation button */
 .sim-button {
   display: block;
   margin: 1rem auto;
@@ -182,11 +195,11 @@ body, .app-container {
   transition: box-shadow 0.3s;
   cursor: pointer;
 }
+
 .sim-button:hover {
   box-shadow: 0 0 20px var(--accent-color);
 }
 
-/* States container */
 .states-container {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -194,6 +207,7 @@ body, .app-container {
   width: 90%;
   margin: 2rem auto;
 }
+
 .state-column {
   background: var(--card-bg);
   border: 1px solid var(--border-color);
@@ -203,6 +217,7 @@ body, .app-container {
   display: flex;
   flex-direction: column;
 }
+
 .state-column h3 {
   margin-top: 0;
   color: var(--accent-color);
@@ -214,44 +229,85 @@ body, .app-container {
   background: var(--card-bg);
   z-index: 1;
 }
+
 .state-column.scrollable {
   max-height: calc(5 * 6.5rem + 2rem);
   overflow-y: auto;
 }
 
-/* Process cards */
 .process-card {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   border-left: 4px solid;
   border-radius: 4px;
   padding: 0.75rem;
   margin: 0.75rem 0;
   transition: transform 0.2s;
 }
+
 .process-card:hover {
   transform: translateX(5px);
 }
+
 .process-card.ready {
   border-color: var(--secondary-color);
 }
+
 .process-card.executing {
   border-color: var(--primary-color);
   animation: pulse 1s infinite;
 }
+
 .process-card.executing.paused {
   border-color: var(--accent-color);
   background: rgba(240, 0, 255, 0.2);
   animation-play-state: paused;
 }
+
 .process-card.done {
   border-color: var(--accent-color);
 }
 
 @keyframes pulse {
-  0%, 100% { box-shadow: 0 0 8px var(--primary-color); }
-  50% { box-shadow: 0 0 16px var(--primary-color); }
+
+  0%,
+  100% {
+    box-shadow: 0 0 8px var(--primary-color);
+  }
+
+  50% {
+    box-shadow: 0 0 16px var(--primary-color);
+  }
 }
 
+
+
+.chart-container {
+  width: 1000px;
+  height: 500px;
+  margin: 2rem auto;
+  background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.chart-container .recharts-cartesian-axis-tick-value {
+  fill: var(--text-color);
+  font-size: 12px;
+}
+
+.recharts-tooltip-wrapper {
+  outline: none;
+}
+
+.recharts-tooltip-wrapper .recharts-default-tooltip {
+  background: none;
+  padding: 0;
+}
+
+.chart-container .recharts-bar-background {
+  display: none !important;
+}
 .app-footer {
   position: static;
   bottom: auto;
