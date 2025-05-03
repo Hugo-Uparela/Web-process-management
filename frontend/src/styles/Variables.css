@@ -1,0 +1,9 @@
+:root {
+    --primary-color: #0ff;
+    --secondary-color: #0f0;
+    --background: #111;
+    --card-bg: rgba(255, 255, 255, 0.05);
+    --border-color: rgba(255, 255, 255, 0.2);
+    --text-color: #eee;
+    --accent-color: #f0f;
+  }

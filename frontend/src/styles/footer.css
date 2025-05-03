@@ -1,0 +1,21 @@
+.app-footer {
+    position: static;
+    width: 100%;
+    background: var(--card-bg);
+    border-top: 1px solid var(--border-color);
+    padding: 1rem 0;
+    text-align: center;
+    margin-top: auto;
+  }
+  .footer-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    color: var(--text-color);
+    font-size: 0.9rem;
+    opacity: 0.75;
+  }
+  .footer-content span {
+    display: block;
+  }
+  

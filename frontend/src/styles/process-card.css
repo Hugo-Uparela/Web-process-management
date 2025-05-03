@@ -1,0 +1,31 @@
+.process-card {
+    background: rgba(255, 255, 255, 0.1);
+    border-left: 4px solid;
+    border-radius: 4px;
+    padding: 0.75rem;
+    margin: 0.75rem 0;
+    transition: transform 0.2s;
+  }
+  .process-card:hover {
+    transform: translateX(5px);
+  }
+  .process-card.ready {
+    border-color: var(--secondary-color);
+  }
+  .process-card.executing {
+    border-color: var(--primary-color);
+    animation: pulse 1s infinite;
+  }
+  .process-card.executing.paused {
+    border-color: var(--accent-color);
+    background: rgba(240, 0, 255, 0.2);
+    animation-play-state: paused;
+  }
+  .process-card.done {
+    border-color: var(--accent-color);
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 8px var(--primary-color); }
+    50%      { box-shadow: 0 0 16px var(--primary-color); }
+  }
+  

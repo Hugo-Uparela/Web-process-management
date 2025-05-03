@@ -1,0 +1,36 @@
+.controls {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+  }
+  .controls > div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  .controls label {
+    font-weight: bold;
+    color: var(--accent-color);
+    font-size: 1rem;
+  }
+  .controls select,
+  .controls input[type="number"] {
+    background: var(--background);
+    border: 1px solid var(--border-color);
+    padding: 0.5rem;
+    border-radius: 4px;
+    color: var(--text-color);
+    width: 140px;
+    transition: border-color 0.3s;
+  }
+  .controls select option {
+    background: var(--background);
+    color: var(--text-color);
+  }
+  .controls select:hover,
+  .controls input[type="number"]:hover {
+    border-color: var(--primary-color);
+  }
+  

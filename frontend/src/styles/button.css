@@ -1,0 +1,19 @@
+.sim-button {
+    display: block;
+    margin: 1rem auto;
+    padding: 0.75rem 2rem;
+    background: var(--primary-color);
+    color: #000;
+    font-weight: bold;
+    border: none;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.05rem;
+    box-shadow: 0 0 10px var(--primary-color);
+    transition: box-shadow 0.3s;
+    cursor: pointer;
+  }
+  .sim-button:hover {
+    box-shadow: 0 0 20px var(--accent-color);
+  }
+  

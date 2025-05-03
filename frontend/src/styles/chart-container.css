@@ -1,0 +1,17 @@
+.chart-container {
+    width: 1000px;
+    height: 500px;
+    margin: 2rem auto;
+    background: var(--card-bg);
+    padding: 1rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+  }
+  .chart-container .recharts-cartesian-axis-tick-value {
+    fill: var(--text-color);
+    font-size: 12px;
+  }
+  .chart-container .recharts-bar-background {
+    display: none !important;
+  }
+  

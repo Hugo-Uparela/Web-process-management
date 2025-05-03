@@ -1,0 +1,25 @@
+.file-input {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .file-input label {
+    font-size: 1.1rem;
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+  .file-input input[type="file"] {
+    background: var(--card-bg);
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: border-color 0.3s, background 0.3s;
+  }
+  .file-input input[type="file"]:hover {
+    border-color: var(--accent-color);
+    background: rgba(240, 0, 255, 0.1);
+  }
+  

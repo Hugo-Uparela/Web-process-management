@@ -1,0 +1,16 @@
+.custom-tooltip {
+    background: rgba(0,0,0,0.8);
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    border-radius: 6px;
+    padding: 0.5rem 1rem;
+  }
+  .custom-tooltip .tooltip-label {
+    color: var(--accent-color);
+    font-size: 0.9rem;
+  }
+  .custom-tooltip .tooltip-value {
+    color: var(--primary-color);
+    font-weight: bold;
+  }
+  

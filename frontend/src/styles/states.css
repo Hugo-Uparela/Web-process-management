@@ -1,0 +1,32 @@
+.states-container {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    width: 90%;
+    margin: 2rem auto;
+  }
+  .state-column {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .state-column h3 {
+    margin-top: 0;
+    color: var(--accent-color);
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.5rem 0;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    background: var(--card-bg);
+    z-index: 1;
+  }
+  .state-column.scrollable {
+    max-height: calc(5 * 6.5rem + 2rem);
+    overflow-y: auto;
+  }
+  
