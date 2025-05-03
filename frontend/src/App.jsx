@@ -143,24 +143,30 @@ export default function App() {
       <h1 className="app-title">Simulador Round Robin</h1>
       {!db && <CargaArchivo onFileChange={onFileChange} />}
       {db && <ControlesSimulacion tipo={tipo} setTipo={setTipo} quantum={quantum} setQuantum={setQuantum} />}
+
       <ListaCatalogos
         catalogos={catalogos}
         isSimulating={isSimulating}
         loadProcesos={loadProcesos}
       />
+
       <BotonSimulacion
         readyQueue={readyQueue}
         isSimulating={isSimulating}
         isPaused={isPaused}
         toggleSimulation={toggleSimulation}
       />
+
       <div className="states-container">
         <PanelListos readyQueue={readyQueue} quantum={quantum} />
         <PanelEjecucion execProcess={execProcess} isPaused={isPaused} quantum={quantum} />
         <PanelTerminados doneList={doneList} quantum={quantum} />
       </div>
+
       <GraficoTurnaround chartReady={chartReady} doneList={doneList} />
+
       <Footer/>
+
     </div>
   );
 }
