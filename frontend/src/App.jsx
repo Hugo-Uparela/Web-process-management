@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import initSqlJs from 'sql.js';
-import './App.css';
 
 import CargaArchivo from './components/CargaArchivo';
 import ControlesSimulacion from './components/ControlesSimulacion';
@@ -10,6 +9,7 @@ import PanelListos from './components/PanelListos';
 import PanelEjecucion from './components/PanelEjecucion';
 import PanelTerminados from './components/PanelTerminados';
 import GraficoTurnaround from './components/GraficoTurnaround';
+import Footer from './components/Footer';
 
 export default function App() {
   const [SQL, setSQL] = useState(null);
@@ -160,12 +160,7 @@ export default function App() {
         <PanelTerminados doneList={doneList} quantum={quantum} />
       </div>
       <GraficoTurnaround chartReady={chartReady} doneList={doneList} />
-      <footer className="app-footer">
-        <div className="footer-content">
-          <span>© 2025 Simulador Round Robin</span>
-          <span>Universidad de Córdoba – Facultad de Ingenierías</span>
-        </div>
-      </footer>
+      <Footer/>
     </div>
   );
 }
