@@ -11,7 +11,7 @@ const CustomTooltip = ({ active, payload, label }) => {
     return (
       <div className="custom-tooltip">
         <div className="tooltip-label">{label}</div>
-        <div className="tooltip-value">Ejecuciones: {payload[0].value}</div>
+        <div className="tooltip-value">Turnaround: {payload[0].value}</div>
       </div>
     );
   }
@@ -26,7 +26,10 @@ export default function App() {
   const [catalogos, setCatalogos] = useState([]);
   const [readyQueue, setReadyQueue] = useState([]);
   const [execProcess, setExecProcess] = useState(null);
-  const [doneList, setDoneList] = useState([]); const [totalCount, setTotalCount] = useState(0);
+  const [doneList, setDoneList] = useState([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [chartReady, setChartReady] = useState(false);
+
 
   const [isSimulating, setIsSimulating] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
@@ -41,6 +44,15 @@ export default function App() {
       .then(SQLLib => setSQL(SQLLib))
       .catch(console.error);
   }, []);
+
+  useEffect(() => {
+    if (!isSimulating && doneList.length === totalCount && totalCount > 0) {
+      setChartReady(true);
+    } else {
+      setChartReady(false);
+    }
+  }, [isSimulating, doneList.length, totalCount]);
+  
 
   // Reset simulation state
   const resetSimulation = () => {
@@ -184,6 +196,8 @@ export default function App() {
     }
   };
 
+
+
   return (
     <div className="app-container">
       <h1 className="app-title">Simulador Round Robin</h1>
@@ -242,7 +256,7 @@ export default function App() {
           <h3>Listos</h3>
           {readyQueue.map(p => (
             <div key={p.pid} className="process-card ready">
-              <div><strong>Nombre Proceso:</strong> {p.nombre}</div>
+              <div><strong>Proceso:</strong> {p.nombre}</div>
               <div><strong>PID:</strong> {p.pid}</div>
               <div><strong>Tiempo de Llegada:</strong> {p.arrival}</div>
               <div><strong>Quantum:</strong> {quantum}</div>
@@ -259,10 +273,10 @@ export default function App() {
             <div className="empty">—</div>
           ) : (
             <div className={`process-card executing${isPaused ? ' paused' : ''}`}>
-              <div><strong>Nombre Proceso:</strong> {execProcess.nombre}</div>
+              <div><strong>Proceso:</strong> {execProcess.nombre}</div>
               <div><strong>PID:</strong> {execProcess.pid}</div>
-              <div><strong>Tiempo de Llegada:</strong> {execProcess.arrival}</div>
-              <div><strong>Ráfaga:</strong> {execProcess.burst}</div>
+              <div><strong>Usuario:</strong> {execProcess.usuario}</div>
+              <div><br /><strong>Quatum:</strong> {quantum}</div>
               <div><strong>Turnaround:</strong> {execProcess.executions + 1}</div>
             </div>
           )}
@@ -272,29 +286,31 @@ export default function App() {
           <h3>Terminados</h3>
           {doneList.map(p => (
             <div key={p.pid} className="process-card done">
-              <div><strong>Nombre Proceso:</strong> {p.nombre}</div>
+              <div><strong>Proceso:</strong> {p.nombre}</div>
               <div><strong>PID:</strong> {p.pid}</div>
-              <div><strong>Tiempo de Llegada:</strong> {p.arrival}</div>
+              <div><strong>Usuario:</strong>{p.usuario}</div>
+              <div><br /><strong>Tiempo de Llegada:</strong> {p.arrival}</div>
               <div><strong>Ráfaga:</strong> {p.burst}</div>
               <div><strong>Prioridad:</strong> {p.prioridad === 0 ? 'Expulsivo' : 'No expulsivo'}</div>
               <div><strong>Turnaround:</strong> {p.executions}</div>
 
               {/* Tiempo Finalización  Quantum * #Ejecuciones, donde #Ejecuciones  */}
               {/* indica la cantidad de veces que un proceso utilizo la C.P.U  */}
-              <div><strong>Tiempo Finalización:</strong> {quantum * p.executions}</div>
+              <div><br /><strong>Tiempo Finalización:</strong> {quantum * p.executions}</div>
             </div>
           ))}
         </div>
       </div>
 
-      {!isSimulating && doneList.length === totalCount && (
+
+      {chartReady && (
         <div className="chart-container">
           <BarChart
             width={1000}
             height={500}
             data={doneList.map(p => ({
               name: p.nombre,
-              ejecuciones: p.executions
+              Turnaround: p.executions
             }))}
             margin={{ top: 20, right: 30, left: 20, bottom: 80 }}
             barCategoryGap="25%"
@@ -342,7 +358,7 @@ export default function App() {
 
 
             <Bar
-              dataKey="ejecuciones"
+              dataKey="Turnaround"
               fill="url(#gradExec)"
               background={null}           // quita completamente el rectángulo de fondo
               activeShape={null}          // desactiva cualquier forma “activa” al pasar el ratón
@@ -351,7 +367,7 @@ export default function App() {
               strokeWidth={1}
             >
               <LabelList
-                dataKey="ejecuciones"
+                dataKey="Turnaround"
                 position="top"
                 style={{
                   fill: 'var(--text-color)',
