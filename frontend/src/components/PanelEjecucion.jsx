@@ -12,9 +12,11 @@ export default function PanelEjecucion({ execProcess, isPaused, quantum }) {
           <div><strong>PID:</strong> {execProcess.pid}</div>
           <div><strong>Usuario:</strong> {execProcess.usuario}</div>
           <div><br /><strong>Quantum:</strong> {quantum}</div>
+         <div><strong>Ráfaga:</strong> {execProcess.burst} ms</div>
           <div><strong>Turnaround:</strong> {execProcess.executions + 1}</div>
         </div>
       )}
     </div>
   );
 }
+
